@@ -33,12 +33,12 @@ type msgJSON struct {
 	Paste   bool   `json:"paste,omitempty"`
 
 	// mouse
-	X          int    `json:"x"`
-	Y          int    `json:"y"`
-	Shift      bool   `json:"shift,omitempty"`
-	Ctrl       bool   `json:"ctrl,omitempty"`
-	Action int `json:"action"`
-	Button int `json:"button"`
+	X      int  `json:"x"`
+	Y      int  `json:"y"`
+	Shift  bool `json:"shift,omitempty"`
+	Ctrl   bool `json:"ctrl,omitempty"`
+	Action int  `json:"action"`
+	Button int  `json:"button"`
 
 	// window_size
 	Width  int `json:"width"`
@@ -70,15 +70,15 @@ func encodeMsg(msg tea.Msg) (msgJSON, bool) {
 		}, true
 	case tea.MouseMsg:
 		return msgJSON{
-			Type:       "mouse",
-			Key:        m.String(),
-			X:          m.X,
-			Y:          m.Y,
-			Shift:      m.Shift,
-			Alt:        m.Alt,
-			Ctrl:       m.Ctrl,
-			Action:     int(m.Action),
-			Button:     int(m.Button),
+			Type:   "mouse",
+			Key:    m.String(),
+			X:      m.X,
+			Y:      m.Y,
+			Shift:  m.Shift,
+			Alt:    m.Alt,
+			Ctrl:   m.Ctrl,
+			Action: int(m.Action),
+			Button: int(m.Button),
 		}, true
 	case tea.WindowSizeMsg:
 		return msgJSON{Type: "window_size", Width: m.Width, Height: m.Height}, true

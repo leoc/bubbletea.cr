@@ -339,16 +339,16 @@ func resetStyleCache() {
 // ---------------------------------------------------------------- layout
 
 type layoutJSON struct {
-	Op       string          `json:"op"` // join_horizontal, join_vertical, place, place_horizontal, place_vertical
-	Pos      float64         `json:"pos"`
-	VPos     float64         `json:"vpos"`
-	Width    int             `json:"width"`
-	Height   int             `json:"height"`
-	Strs     []string        `json:"strs"`
-	Str      string          `json:"str"`
-	WSChars  string          `json:"whitespace_chars"`
-	WSFg     json.RawMessage `json:"whitespace_foreground"`
-	WSBg     json.RawMessage `json:"whitespace_background"`
+	Op      string          `json:"op"` // join_horizontal, join_vertical, place, place_horizontal, place_vertical
+	Pos     float64         `json:"pos"`
+	VPos    float64         `json:"vpos"`
+	Width   int             `json:"width"`
+	Height  int             `json:"height"`
+	Strs    []string        `json:"strs"`
+	Str     string          `json:"str"`
+	WSChars string          `json:"whitespace_chars"`
+	WSFg    json.RawMessage `json:"whitespace_foreground"`
+	WSBg    json.RawMessage `json:"whitespace_background"`
 }
 
 // bt_lipgloss_layout runs one layout operation described as JSON.

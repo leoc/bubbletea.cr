@@ -24,7 +24,7 @@
             fileset = pkgs.lib.fileset.fileFilter (f: !(f.hasExt "so" || f.hasExt "h")) ./go;
           };
           modRoot = "go";
-          vendorHash = "sha256-rcO2eDT9msii1d6f7NddTGx8m41L7XFXOAC8u/qxptw=";
+          vendorHash = "sha256-i24NrEuuO3GQ1JlFys35IgByAiwgqbXbzt2ddpAVv74=";
           env.CGO_ENABLED = "1";
           buildPhase = ''
             runHook preBuild
