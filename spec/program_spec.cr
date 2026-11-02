@@ -162,3 +162,40 @@ describe Tea::Program do
     counts["msgs"].should eq 0
   end
 end
+
+private class SpinnerModel
+  include Tea::Model
+
+  getter spinner = Bubbles::Spinner.new(frames: ["a", "b", "c"], fps: 100.0)
+  getter frames = [] of String
+  getter go_types = Set(String).new
+
+  def init
+    spinner.tick
+  end
+
+  def update(msg : Tea::Msg)
+    case msg
+    when Tea::GoMsg
+      @go_types << msg.go_type
+      cmd = spinner.update(msg)
+      @frames << spinner.view
+      return Tea.quit if @frames.size >= 4
+      cmd
+    end
+  end
+
+  def view : String
+    spinner.view
+  end
+end
+
+describe "Bubbles inside a program" do
+  it "runs Go commands and routes Go messages back to the component" do
+    model = SpinnerModel.new
+    run_headless(model) { }
+    model.frames.should eq ["b", "c", "a", "b"]
+    model.go_types.should eq Set{"spinner.TickMsg"}
+    Tea::FFI.handle_counts["msgs"].should eq 0
+  end
+end
