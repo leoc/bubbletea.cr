@@ -154,7 +154,14 @@ their JSON (`KeyMsg`, `MouseMsg`, `WindowSizeMsg`, `GoMsg`), so components
 can be driven headless in specs. Key bindings (`Bubbles::Key::Binding`) and
 key maps are plain Crystal; `Bubbles::Help` sends them to Go for rendering.
 
-Glamour is one call: `bt_glamour_render(markdown, options_json)`.
+List items stay Crystal objects: Go only sees `{id, title, description,
+filter_value}`, and `selected_item` maps the id back to the Crystal object.
+
+Glamour is one call: `bt_glamour_render(markdown, options_json)`. Its `auto`
+style uses Lip Gloss' cached background detection instead of
+`glamour.WithAutoStyle`, which would query the terminal again: while a
+program owns stdin the answer never reaches the query and the render blocks
+until the query times out.
 
 ## Memory ownership
 

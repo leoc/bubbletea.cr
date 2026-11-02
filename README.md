@@ -6,6 +6,11 @@ Crystal bindings for [Charm](https://charm.sh)'s terminal UI stack:
   program loop (`Tea`)
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss): styles, layout,
   tables (`Lipgloss`)
+- [Bubbles](https://github.com/charmbracelet/bubbles): list, table, text
+  input, text area, viewport, spinner, progress, help/key maps, paginator
+  (`Bubbles`)
+- [Glamour](https://github.com/charmbracelet/glamour): markdown rendering
+  (`Glamour`)
 
 The Go libraries are compiled into one C shared library
 (`libbubbletea_go.so`) and bound through Crystal's `lib` FFI. Bubble Tea's
@@ -54,7 +59,7 @@ Linux only for now (x86_64, aarch64).
 dependencies:
   bubbletea:
     git: https://github.com/leoc/bubbletea.cr
-    version: ~> 0.1
+    version: ~> 0.2
 ```
 
 `shards install` runs `make lib` as postinstall: with Go ≥ 1.24 and a C
@@ -147,6 +152,65 @@ side, colours), inline, tab width, transform (`:upper`/`:lower`),
 toggles, width/height/offset/wrap. `Lipgloss.color_profile=` and
 `Lipgloss.dark_background=` override detection.
 
+### Bubbles
+
+The components are the real Go Bubbles behind a handle. Forward messages to
+them in `update` and return their commands:
+
+```crystal
+class Search
+  include Tea::Model
+
+  @input = Bubbles::TextInput.new(placeholder: "Search", width: 30)
+  @spinner = Bubbles::Spinner.new(Bubbles::Spinner::Type::Dot)
+
+  def init
+    Tea.batch(@input.focus, @spinner.tick) # cursor blink, spinner animation
+  end
+
+  def update(msg : Tea::Msg)
+    return Tea.quit if msg.is_a?(Tea::KeyMsg) && msg.key == "esc"
+    Tea.batch(@input.update(msg), @spinner.update(msg))
+  end
+
+  def view : String
+    "#{@spinner.view} #{@input.view}"
+  end
+end
+```
+
+Ticks, blinks and animation frames arrive as `Tea::GoMsg`; pass them on to
+all components in the same `update` call (each ignores what is not its own).
+
+| Component | Highlights |
+|---|---|
+| `Bubbles::TextInput` | `value`, `focus`, `blur`, placeholder, char limit, password echo, suggestions, styles, custom key map |
+| `Bubbles::TextArea` | multi-line editing, line numbers, `line`, `column`, `line_count`, styles |
+| `Bubbles::Viewport` | `content=`, scrolling methods, `scroll_percent`, mouse wheel |
+| `Bubbles::List(T)` | any Crystal items with `title` (and `description`, `filter_value`) or strings; filtering, pagination, status messages, spinner, `selected_item` returns your object |
+| `Bubbles::Table` | columns/rows, `selected_row`, `cursor`, styles, help |
+| `Bubbles::Spinner` | twelve built-in types or custom frames, `tick` |
+| `Bubbles::Progress` | `view_as(0.4)` or animated `set_percent`, gradients, solid fill |
+| `Bubbles::Paginator` | arabic or dots, `slice_bounds`, `on_last_page?` |
+| `Bubbles::Help` + `Bubbles::Key` | key bindings (`Key::Binding.new("up", "k", help: {"↑/k", "up"})`, `matches?`), key maps, short/full help views; `List` and `Table` are key maps too |
+
+Key maps of components can be overridden by binding name, e.g.
+`Bubbles::TextInput.new(key_map: {"delete_character_backward" => Bubbles::Key::Binding.new("ctrl+h")})`;
+`component.key_map` lists the names.
+
+### Glamour
+
+```crystal
+puts Glamour.render(File.read("README.md"), style: "dark", width: 80)
+
+renderer = Glamour::Renderer.new(style: "auto", width: 60, emoji: true)
+viewport.content = renderer.render(markdown)
+```
+
+Styles: `auto` (from the detected background), `dark`, `light`, `notty`,
+`ascii`, `dracula`, `pink`, `tokyo-night`, or a Glamour JSON style via
+`style_json:`.
+
 ## Examples
 
 ```sh
@@ -155,6 +219,17 @@ make lib
 crystal run examples/counter.cr
 crystal run examples/list.cr      # cursor, selection, mouse wheel and clicks
 crystal run examples/layout.cr    # alt screen, tabs, table, clock, async loading
+
+crystal run examples/spinner.cr        # spinner while a background job runs
+crystal run examples/progress.cr       # animated progress bar
+crystal run examples/textinput.cr      # form with focus handling, suggestions, password
+crystal run examples/textarea.cr       # editor with line numbers
+crystal run examples/viewport.cr       # markdown pager (viewport + Glamour)
+crystal run examples/table.cr          # interactive table
+crystal run examples/list_bubbles.cr   # filterable list, status messages, help
+crystal run examples/paginator.cr      # dots pagination
+crystal run examples/help.cr           # key bindings and help toggle
+crystal run examples/glamour.cr -- README.md dark
 ```
 
 ## Development
@@ -166,20 +241,29 @@ make spec    # crystal spec (headless, no TTY needed)
 nix flake check   # builds the library with Nix, runs specs, compiles examples, checks formatting
 ```
 
-After changing `go/go.mod`, update `vendorHash` in `flake.nix` (`nix build`
-prints the new hash).
+After changing `go/go.mod`, set `vendorHash` in `flake.nix` to
+`lib.fakeHash` (or any other wrong hash) and take the correct one from the
+error of `nix build .#libbubbletea-go`; an unchanged hash silently reuses the
+old vendor directory.
 
 ## Limitations
 
 - Linux only so far; macOS needs a `.dylib` build and `install_name` instead
   of the rpath (untested).
-- Wraps the v1 API line (Bubble Tea v1.3, Lip Gloss v1.1).
+- Wraps the v1 API line (Bubble Tea v1.3, Lip Gloss v1.1, Bubbles v1.0,
+  Glamour v1.0).
   `charm.land/*/v2` is not wrapped yet.
 - The model is mutable; `update` returns only a command.
 - Several runes typed faster than one read arrive as one `KeyMsg` with
   `runes` = `"ab"` (Bubble Tea behaviour).
 - `tea.Exec`/`tea.ExecProcess` (handing the terminal to a subprocess) are
   not wrapped yet.
+- Not wrapped from Bubbles: `filepicker`, `timer`, `stopwatch`, `cursor` as
+  a standalone component, custom list item delegates (the default delegate
+  with its styles is used), text input validation functions.
+- A `Tea::GoMsg` is only valid during the `update` call that received it.
+- Component getters are FFI calls; avoid calling them in tight loops (cache
+  what you need in `update`).
 - A crash inside Go code that is not a Go panic (e.g. a nil dereference) is
   reported by Crystal's segfault handler, not as a Go panic; see DESIGN.md.
 - Every value crossing the boundary is copied; very large views (megabytes)
