@@ -1,0 +1,7 @@
+go/build/
+bin/
+lib/
+.crystal/
+result*
+.direnv/
+tmp/

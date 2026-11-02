@@ -1,0 +1,16 @@
+name: bubbletea
+version: 0.1.0
+
+description: |
+  Crystal bindings for Charm's Bubble Tea, Lip Gloss, Bubbles and Glamour,
+  built on a Go c-shared library.
+
+authors:
+  - Arthur Andersen <leoc.git@gmail.com>
+
+crystal: ">= 1.13.0"
+
+license: MIT
+
+scripts:
+  postinstall: make lib
