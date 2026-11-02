@@ -42,6 +42,16 @@ lib LibTea
   fun bt_lipgloss_layout(spec : LibC::Char*, n : LibC::Int) : LibC::Char*
   fun bt_lipgloss_size(s : LibC::Char*, n : LibC::Int) : LibC::Char*
   fun bt_lipgloss_table(spec : LibC::Char*, n : LibC::Int) : LibC::Char*
+
+  # bubbles
+  fun bt_component_new(kind : LibC::Char*, kind_len : LibC::Int, opts : LibC::Char*, opts_len : LibC::Int) : LibC::Char*
+  fun bt_component_update(id : LibC::ULongLong, msg : LibC::Char*, msg_len : LibC::Int) : LibC::ULongLong
+  fun bt_component_view(id : LibC::ULongLong) : LibC::Char*
+  fun bt_component_call(id : LibC::ULongLong, method : LibC::Char*, method_len : LibC::Int, args : LibC::Char*, args_len : LibC::Int) : LibC::Char*
+  fun bt_component_free(id : LibC::ULongLong) : Void
+
+  # glamour
+  fun bt_glamour_render(md : LibC::Char*, md_len : LibC::Int, opts : LibC::Char*, opts_len : LibC::Int) : LibC::Char*
 end
 {% end %}
 
