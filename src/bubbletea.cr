@@ -5,6 +5,7 @@ require "./tea/model"
 require "./tea/program"
 require "./lipgloss"
 require "./bubbles"
+require "./glamour"
 
 # Crystal bindings for Bubble Tea (see README.md and DESIGN.md).
 module Tea
