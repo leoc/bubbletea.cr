@@ -63,7 +63,10 @@ describe Tea::Msg do
       alt = Tea::KeyMsg.new("alt+x")
       alt.alt?.should be_true
       alt.key.should eq "alt+x"
-      Tea::KeyMsg.new(" ").key.should eq " "
+      space = Tea::KeyMsg.new(" ")
+      space.key.should eq " "
+      # as the terminal sends it: text inputs insert the rune
+      space.runes.should eq " "
     end
 
     it "round-trips through the wire format" do

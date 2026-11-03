@@ -146,6 +146,11 @@ var keyTypes = func() map[string]tea.KeyType {
 
 // parseKey turns "a", "alt+x", "ctrl+c", "enter" or "shift+tab" into a key.
 func parseKey(s string) (tea.Key, bool) {
+	// before the key table, which knows " " as KeySpace without its rune
+	// (text inputs insert the runes, so they would drop the space)
+	if s == " " {
+		return tea.Key{Type: tea.KeySpace, Runes: []rune(" ")}, true
+	}
 	if kt, ok := keyTypes[s]; ok && kt != tea.KeyRunes {
 		return tea.Key{Type: kt}, true
 	}
@@ -153,9 +158,6 @@ func parseKey(s string) (tea.Key, bool) {
 		k, ok := parseKey(s[4:])
 		k.Alt = true
 		return k, ok
-	}
-	if s == " " {
-		return tea.Key{Type: tea.KeySpace, Runes: []rune(" ")}, true
 	}
 	if s != "" {
 		return tea.Key{Type: tea.KeyRunes, Runes: []rune(s)}, true
